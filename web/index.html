@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InfirmIA - Developer Stress Check</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .status-image {
+      width: 100%;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .status-image.visible {
+      display: block;
+    }
+
+    @media (max-width: 700px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    form {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    input[type="number"], select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      color: #e2e8f0;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="number"]:focus, select:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    button {
+      margin-top: 0.5rem;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover { background: #4f46e5; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Result panel */
+    .result {
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      display: none;
+    }
+
+    .result.visible { display: block; }
+
+    .result .score {
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .result .label {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-top: 0.25rem;
+    }
+
+    .result .verdict {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .result .advice {
+      margin-top: 0.5rem;
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Colour themes for result */
+    .result.level-ok    { background: #064e3b; }
+    .result.level-ok .score { color: #34d399; }
+    .result.level-ok .verdict { color: #6ee7b7; }
+
+    .result.level-warn  { background: #78350f; }
+    .result.level-warn .score { color: #fbbf24; }
+    .result.level-warn .verdict { color: #fcd34d; }
+
+    .result.level-bad   { background: #7f1d1d; }
+    .result.level-bad .score { color: #f87171; }
+    .result.level-bad .verdict { color: #fca5a5; }
+
+    .error {
+      margin-top: 1rem;
+      background: #7f1d1d;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .error.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>InfirmIA</h1>
+    <p class="subtitle">Check if you need a break</p>
+
+    <div class="main-layout">
+      <div class="left-panel">
+        <form id="stress-form">
+          <div class="row">
+            <div class="field">
+              <label for="hours_worked">Hours worked / day</label>
+              <input type="number" id="hours_worked" min="0" value="8" required />
+            </div>
+            <div class="field">
+              <label for="sleep_hours">Sleep hours</label>
+              <input type="number" id="sleep_hours" min="0" value="7" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="bugs">Bugs encountered</label>
+              <input type="number" id="bugs" min="0" value="2" required />
+            </div>
+            <div class="field">
+              <label for="deadline_days">Days until deadline</label>
+              <input type="number" id="deadline_days" min="0" value="10" required />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="coffee_cups">Coffee cups</label>
+              <input type="number" id="coffee_cups" min="0" value="2" required />
+            </div>
+            <div class="field">
+              <label for="meetings">Meetings</label>
+              <input type="number" id="meetings" min="0" value="1" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="interruptions">Interruptions</label>
+            <input type="number" id="interruptions" min="0" value="3" required />
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="experience_years">Experience level</label>
+              <select id="experience_years" required>
+                <option value="Junior">Junior</option>
+                <option value="Mid" selected>Mid</option>
+                <option value="Senior">Senior</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="code_complexity">Code complexity</label>
+              <select id="code_complexity" required>
+                <option value="Low">Low</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="High">High</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="remote_work">Remote work</label>
+            <select id="remote_work" required>
+              <option value="Yes">Yes</option>
+              <option value="No" selected>No</option>
+            </select>
+          </div>
+
+          <button type="submit" id="submit-btn">Check my stress level</button>
+        </form>
+
+        <div class="error" id="error-box"></div>
+      </div>
+
+      <div class="right-panel">
+        <div class="result" id="result-box">
+          <div class="score" id="result-score"></div>
+          <div class="label">stress level / 100</div>
+          <div class="verdict" id="result-verdict"></div>
+          <div class="advice" id="result-advice"></div>
+        </div>
+        <img class="status-image" id="status-image" src="" alt="Status illustration" />
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:8000";
+
+    const form = document.getElementById("stress-form");
+    const btn = document.getElementById("submit-btn");
+    const resultBox = document.getElementById("result-box");
+    const errorBox = document.getElementById("error-box");
+    const statusImage = document.getElementById("status-image");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = "Checking...";
+      resultBox.classList.remove("visible", "level-ok", "level-warn", "level-bad");
+      statusImage.classList.remove("visible");
+      errorBox.classList.remove("visible");
+
+      const payload = {
+        hours_worked:     parseInt(document.getElementById("hours_worked").value),
+        sleep_hours:      parseInt(document.getElementById("sleep_hours").value),
+        bugs:             parseInt(document.getElementById("bugs").value),
+        deadline_days:    parseInt(document.getElementById("deadline_days").value),
+        coffee_cups:      parseInt(document.getElementById("coffee_cups").value),
+        meetings:         parseInt(document.getElementById("meetings").value),
+        interruptions:    parseInt(document.getElementById("interruptions").value),
+        experience_years: document.getElementById("experience_years").value,
+        code_complexity:  document.getElementById("code_complexity").value,
+        remote_work:      document.getElementById("remote_work").value,
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/predict`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const detail = await res.json().catch(() => null);
+          throw new Error(detail?.detail || `Server error (${res.status})`);
+        }
+
+        const data = await res.json();
+        const score = data.stress_level;
+
+        document.getElementById("result-score").textContent = score;
+
+        let level, verdict, advice;
+        if (score < 40) {
+          level = "level-ok";
+          verdict = "You're doing fine!";
+          advice = "Your stress level is low. Keep up the healthy balance.";
+        } else if (score < 65) {
+          level = "level-warn";
+          verdict = "You should take a break soon.";
+          advice = "Your stress is moderate. Consider stepping away for a walk, stretching, or grabbing some water.";
+        } else {
+          level = "level-bad";
+          verdict = "You need to rest now.";
+          advice = "Your stress level is high. Stop working, take a real break, and try to get some sleep or fresh air.";
+        }
+
+        document.getElementById("result-verdict").textContent = verdict;
+        document.getElementById("result-advice").textContent = advice;
+        resultBox.classList.add("visible", level);
+
+        const imageMap = {
+          "level-ok":   "assets/fine/nurse_fine.webp",
+          "level-warn": "assets/soon/soon.jpg",
+          "level-bad":  "assets/rest/jarvis-more.gif",
+        };
+        statusImage.src = imageMap[level];
+        statusImage.classList.add("visible");
+      } catch (err) {
+        errorBox.textContent = err.message;
+        errorBox.classList.add("visible");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Check my stress level";
+      }
+    });
+  </script>
+</body>
+</html>
